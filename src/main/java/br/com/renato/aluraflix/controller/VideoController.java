@@ -3,6 +3,10 @@ package br.com.renato.aluraflix.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,14 +35,15 @@ public class VideoController {
 	VideoRepository videoRepository;
 
 	@GetMapping
-	public ResponseEntity<?> getVideos(){
-		List<Video> videos = videoRepository.findAll();
-		return ResponseEntity.ok(videos);
+	public Page<?> getVideos(@RequestParam(name = "size", defaultValue = "5") int size,
+			@RequestParam(name = "page", defaultValue = "0") int page){
+		
+		PageRequest of = PageRequest.of(page, size);
+		return videoRepository.findAll(of).map(DadosDetalhamentoVideo::new);
 	}
 	
 	@GetMapping("/")
 	public ResponseEntity<?> getVideos(@RequestParam(name = "search") String titulo){
-		System.out.println(titulo);
 		List<DadosDetalhamentoVideo> videos = videoRepository.findByTitulo(titulo).stream().map(
 				video ->{
 					DadosDetalhamentoVideo videoDto = new DadosDetalhamentoVideo(video);
